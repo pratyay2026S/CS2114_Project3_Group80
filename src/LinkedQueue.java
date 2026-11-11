@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class LinkedQueue<T> {
     //~ Fields ................................................................
     private Node<T> firstNode;
@@ -29,7 +31,7 @@ public class LinkedQueue<T> {
     }
     T dequeque() {
         if(isEmpty()) {
-            //exception
+            throw new NoSuchElementException("No element at front");
         }
         T front = firstNode.data;
         firstNode = firstNode.next;
@@ -38,7 +40,6 @@ public class LinkedQueue<T> {
             lastNode = null;
         }
         return front;
-
     }
     // ----------------------------------------------------------
     /**
@@ -46,6 +47,9 @@ public class LinkedQueue<T> {
      * @return
      */
     T peek() {
+        if(isEmpty()) {
+            throw new NoSuchElementException("No element at front");
+        }
         return firstNode.data;
     }
     // ----------------------------------------------------------
@@ -53,7 +57,7 @@ public class LinkedQueue<T> {
      * Place a description of your method here.
      * @return
      */
-    boolean isEmpty() { //check this method
+    boolean isEmpty() { 
         return firstNode == null;
     }
     
