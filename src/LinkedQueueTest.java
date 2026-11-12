@@ -1,66 +1,96 @@
-import java.util.NoSuchElementException;
-import student.TestCase;
 
-public class LinkedQueueTest extends TestCase{
-    
+public class LinkedQueueTest extends student.TestCase {
+
     private LinkedQueue<String> queue;
-    
+
     public void setUp() {
-       queue = new LinkedQueue<String>();
+        queue = new LinkedQueue<String>();
     }
-    
-    public void testEnqueue() {
-        //empty queue
-        queue.enqueue("First");
-        assertEquals(queue.peek(), "First");
-        //not empty queue
-        queue.enqueue("Second");
-        assertEquals(queue.peek(), "Second");
-    }
-    
-    public void testDequeue() {
-        //not empty queue
-        queue.enqueue("First");
-        queue.enqueue("Second");
-        queue.enqueue("Third");
-        assertEquals(queue.dequeque(), "Third");
-        assertEquals(queue.dequeque(), "Second");
-        assertEquals(queue.dequeque(), "First");
-        //empty queue
-        Exception exception = null;
-        try
-        {
-            queue.dequeque();
-        }
-        catch (NoSuchElementException e)
-        {
-            exception = e;
-        }
-        assertNotNull(exception);
-    }
-    public void testPeek() {
-        //empty queue
-        Exception exception = null;
-        try
-        {
-            queue.dequeque();
-        }
-        catch (NoSuchElementException e)
-        {
-            exception = e;
-        }
-        assertNotNull(exception);
-        //not empty queue
-        queue.enqueue("Entry");
-        assertEquals(queue.peek(), "Entry");
-    }
-    
-    public void testIsEmpty() {
-        //empty queue
+
+    public void testNewQueueIsEmpty() {
         assertTrue(queue.isEmpty());
-        //not empty queue
-        queue.enqueue("Entry");
+        assertEquals(0, queue.getSize());
+    }
+
+    public void testEnqueueOneEntry() {
+        queue.enqueue("A");
+
+        assertFalse(queue.isEmpty());
+        assertEquals(1, queue.getSize());
+        assertEquals("A", queue.peek());
+    }
+
+    public void testEnqueueMultipleEntries() {
+        queue.enqueue("A");
+        queue.enqueue("B");
+        queue.enqueue("C");
+
+        assertEquals(3, queue.getSize());
+        assertEquals("A", queue.peek());
+    }
+
+    public void testDequeue() {
+        queue.enqueue("A");
+        queue.enqueue("B");
+
+        assertEquals("A", queue.dequeue());
+        assertEquals("B", queue.peek());
+        assertEquals(1, queue.getSize());
+    }
+
+    public void testDequeueUntilEmpty() {
+        queue.enqueue("A");
+        queue.enqueue("B");
+
+        assertEquals("A", queue.dequeue());
+        assertEquals("B", queue.dequeue());
+
+        assertTrue(queue.isEmpty());
+        assertEquals(0, queue.getSize());
+    }
+
+    public void testEnqueueAfterEmpty() {
+        queue.enqueue("A");
+        queue.dequeue();
+
+        queue.enqueue("B");
+
+        assertEquals("B", queue.peek());
+        assertEquals(1, queue.getSize());
+    }
+
+    public void testPeekDoesNotRemoveEntry() {
+        queue.enqueue("A");
+
+        assertEquals("A", queue.peek());
+        assertEquals(1, queue.getSize());
         assertFalse(queue.isEmpty());
     }
 
+    public void testEnqueueNull() {
+        try {
+            queue.enqueue(null);
+            fail("Expected IllegalArgumentException.");
+        } catch (IllegalArgumentException e) {
+            assertTrue(true);
+        }
+    }
+
+    public void testDequeueEmptyQueue() {
+        try {
+            queue.dequeue();
+            fail("Expected IllegalStateException.");
+        } catch (IllegalStateException e) {
+            assertTrue(true);
+        }
+    }
+
+    public void testPeekEmptyQueue() {
+        try {
+            queue.peek();
+            fail("Expected IllegalStateException.");
+        } catch (IllegalStateException e) {
+            assertTrue(true);
+        }
+    }
 }

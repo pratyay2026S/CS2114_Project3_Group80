@@ -1,96 +1,81 @@
-import java.util.*;
 
 public class LinkedQueue<T> {
-    //~ Fields ................................................................
-    private Node<T> firstNode;
-    private Node<T> lastNode;
-    int size;
-    //~ Constructors ..........................................................
+
+    private Node<T> front;
+    private Node<T> back;
+    private int size;
+
+    /**
+     * Creates an empty queue.
+     */
     public LinkedQueue() {
-        firstNode = null;
-        lastNode = null;
+        front = null;
+        back = null;
         size = 0;
     }
-    //~Public  Methods ........................................................
 
-    // ----------------------------------------------------------
     /**
-     * Place a description of your method here.
-     * @param newEntry
+     * Adds an entry to the back of the queue.
      */
-    void enqueue(T newEntry) {
-        Node<T> newNode = new Node<T>(newEntry);
+    public void enqueue(T anEntry) {
+        if (anEntry == null) {
+            throw new IllegalArgumentException("Entry cannot be null.");
+        }
+
+        Node<T> newNode = new Node<T>(anEntry);
+
         if (isEmpty()) {
-            firstNode = newNode;
+            front = newNode;
+            back = newNode;
+        } else {
+            back.setNext(newNode);
+            back = newNode;
         }
-        else {
-            lastNode.next = newNode;
-        }
-        lastNode = newNode;
+
         size++;
     }
-    T dequeque() {
-        if(isEmpty()) {
-            throw new NoSuchElementException("No element at front");
+
+    /**
+     * Removes and returns the entry at the front.
+     */
+    public T dequeue() {
+        if (isEmpty()) {
+            throw new IllegalStateException("Queue is empty.");
         }
-        T front = firstNode.data;
-        firstNode = firstNode.next;
+
+        T frontEntry = front.getData();
+        front = front.getNext();
         size--;
-        if(firstNode == null) {
-            lastNode = null;
-        }
-        return front;
-    }
-    // ----------------------------------------------------------
-    /**
-     * Place a description of your method here.
-     * @return
-     */
-    T peek() {
-        if(isEmpty()) {
-            throw new NoSuchElementException("No element at front");
-        }
-        return firstNode.data;
-    }
-    // ----------------------------------------------------------
-    /**
-     * Place a description of your method here.
-     * @return
-     */
-    boolean isEmpty() { 
-        return firstNode == null;
-    }
-    
-    /**
-     * A node in the chain. Holds one entry and a link to the next node.
-     *
-     * @param <E> the type of data held in the node
-     */
-    private static class Node<E>
-    {
-        private E data;        // entry stored in this node
-        private Node<E> next;  // link to the next node, or null
 
-        /**
-         * Creates a node with the given data and no next node.
-         *
-         * @param dataPortion the entry to store
-         */
-        private Node(E dataPortion)
-        {
-            this(dataPortion, null);
+        if (front == null) {
+            back = null;
         }
 
-        /**
-         * Creates a node with the given data and next link.
-         *
-         * @param dataPortion the entry to store
-         * @param nextNode the node that follows this one
-         */
-        private Node(E dataPortion, Node<E> nextNode)
-        {
-            data = dataPortion;
-            next = nextNode;
+        return frontEntry;
+    }
+
+    /**
+     * Returns the entry at the front without removing it.
+     */
+    public T peek() {
+        if (isEmpty()) {
+            throw new IllegalStateException("Queue is empty.");
         }
+
+        return front.getData();
+    }
+
+    /**
+     * Checks whether the queue is empty.
+     */
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    /**
+     * Returns the number of entries in the queue.
+     */
+    public int getSize() {
+        return size;
     }
 }
