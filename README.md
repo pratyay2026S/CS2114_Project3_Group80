@@ -213,13 +213,13 @@ Team: Abigail, Pratyay and Abhinav.
 | `Node.java` | Pratyay | Wrote |
 | `Observer.java` | Abigail | Wrote |
 | `LoginView.java` | Abhinav | Wrote (GenAI-assisted) |
-| `DashboardView.java` | Abhinav | Wrote (GenAI-assisted) |
-| `MedicationView.java` | Abhinav | Wrote (GenAI-assisted) |
+| `DashboardView.java` | Abigail | Wrote (GenAI-assisted) |
+| `MedicationView.java` | Pratyay | Wrote (GenAI-assisted) |
 | `AppointmentView.java` | Abhinav | Wrote (GenAI-assisted) |
-| `PatientController.java` | Abhinav | Wrote (GenAI-assisted) |
+| `PatientController.java` | Abigail | Wrote (GenAI-assisted) |
 | `MedicationController.java` | Abhinav | Wrote (GenAI-assisted) |
-| `AppointmentController.java` | Abhinav | Wrote (GenAI-assisted) |
-| `Main.java` | Abhinav | Wrote (GenAI-assisted) |
+| `AppointmentController.java` | Pratyay | Wrote (GenAI-assisted) |
+| `Main.java` | Pratyay | Wrote (GenAI-assisted) |
 | `PatientTest.java` | Abigail | Wrote |
 | `MedicationTest.java` | Abhinav | Wrote |
 | `MedicationTrackerTest.java` | Pratyay, Abigail | Pratyay wrote; Abigail tested |
