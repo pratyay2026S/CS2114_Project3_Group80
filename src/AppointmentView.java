@@ -373,6 +373,15 @@ public class AppointmentView extends JFrame implements Observer {
     }
 
     /**
+     * Releases the model subscription when the window is disposed.
+     */
+    @Override
+    public void dispose() {
+        appointmentManager.removeObserver(this);
+        super.dispose();
+    }
+
+    /**
      * Updates the displayed appointments when
      * the model changes.
      */

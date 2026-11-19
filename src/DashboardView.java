@@ -36,6 +36,8 @@ public class DashboardView extends JFrame implements Observer {
         setLocationRelativeTo(null);
 
         initializeComponents();
+        patient.getTracker().addObserver(this);
+        patient.getAppointmentManager().addObserver(this);
     }
 
     /**
@@ -143,8 +145,7 @@ public class DashboardView extends JFrame implements Observer {
         logoutButton.addActionListener(e -> {
             dispose();
 
-            LoginView loginView = new LoginView();
-            loginView.setVisible(true);
+            patientController.logout();
         });
     }
 
@@ -153,8 +154,26 @@ public class DashboardView extends JFrame implements Observer {
      */
     @Override
     public void update(List<String> list) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(() -> update(list));
+            return;
+        }
+
         welcomeLabel.setText(
             "Welcome, " + patient.getName() + "!"
         );
+    }
+
+    /**
+     * Releases model subscriptions and the appointment window.
+     */
+    @Override
+    public void dispose() {
+        patient.getTracker().removeObserver(this);
+        patient.getAppointmentManager().removeObserver(this);
+        if (appointmentView != null) {
+            appointmentView.dispose();
+        }
+        super.dispose();
     }
 }

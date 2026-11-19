@@ -1,6 +1,8 @@
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MedicationTracker {
 
@@ -8,12 +10,14 @@ public class MedicationTracker {
     private ArrayList<Medication> medications;
     private LinkedQueue<Medication> doseQueue;
     private List<Observer> observers;
+    private Map<Medication, Integer> dosesTaken;
 
     // Constructor
     public MedicationTracker() {
         medications = new ArrayList<Medication>();
         doseQueue = new LinkedQueue<Medication>();
         observers = new ArrayList<Observer>();
+        dosesTaken = new HashMap<Medication, Integer>();
     }
 
     // Adds an observer
@@ -23,6 +27,11 @@ public class MedicationTracker {
         }
 
         observers.add(o);
+    }
+
+    // Removes an observer when its view is closed
+    public void removeObserver(Observer o) {
+        observers.remove(o);
     }
 
     // Notifies observers
@@ -49,7 +58,15 @@ public class MedicationTracker {
             throw new IllegalArgumentException("Medication cannot be null.");
         }
 
+        for (Medication existing : medications) {
+            if (existing.getName().equalsIgnoreCase(m.getName())) {
+                throw new IllegalArgumentException(
+                    "A medication with this name already exists.");
+            }
+        }
+
         medications.add(m);
+        dosesTaken.put(m, 0);
 
         // Add weekly doses to the queue
         for (int i = 0; i < m.getFrequency() * 7; i++) {
@@ -57,6 +74,56 @@ public class MedicationTracker {
         }
 
         notifyObservers();
+    }
+
+    /**
+     * Updates medication details and adjusts the remaining weekly doses.
+     * Doses already taken are not restored when the frequency changes.
+     */
+    public void updateMedication(Medication medication) {
+        if (medication == null) {
+            throw new IllegalArgumentException("Medication cannot be null.");
+        }
+
+        for (Medication existing : medications) {
+            if (existing.getName().equalsIgnoreCase(medication.getName())) {
+                if (existing.getFrequency() != medication.getFrequency()) {
+                    List<Medication> remaining = new ArrayList<Medication>();
+                    while (!doseQueue.isEmpty()) {
+                        Medication dose = doseQueue.dequeue();
+                        remaining.add(dose);
+                    }
+                    int newCount = Math.max(0,
+                        medication.getFrequency() * 7 - dosesTaken.get(existing));
+                    boolean inserted = false;
+                    for (Medication dose : remaining) {
+                        if (dose == existing) {
+                            if (!inserted) {
+                                for (int i = 0; i < newCount; i++) {
+                                    doseQueue.enqueue(existing);
+                                }
+                                inserted = true;
+                            }
+                        }
+                        else {
+                            doseQueue.enqueue(dose);
+                        }
+                    }
+                    if (!inserted) {
+                        for (int i = 0; i < newCount; i++) {
+                            doseQueue.enqueue(existing);
+                        }
+                    }
+                }
+                existing.setDosage(medication.getDosage());
+                existing.setFrequency(medication.getFrequency());
+                existing.setQuantity(medication.getQuantity());
+                notifyObservers();
+                return;
+            }
+        }
+        throw new IllegalArgumentException(
+            "Medication not found: " + medication.getName());
     }
 
     // Removes a medication by name
@@ -79,6 +146,7 @@ public class MedicationTracker {
         }
 
         medications.remove(removed);
+        dosesTaken.remove(removed);
 
         // Rebuild the queue without the removed medication
         List<Medication> remainingDoses = new ArrayList<Medication>();
@@ -113,6 +181,7 @@ public class MedicationTracker {
 
         doseQueue.dequeue();
         next.setQuantity(next.getQuantity() - 1);
+        dosesTaken.put(next, dosesTaken.get(next) + 1);
 
         notifyObservers();
 

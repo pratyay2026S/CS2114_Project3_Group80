@@ -27,7 +27,7 @@ public class MedicationController {
             tracker.addMedication(m);
         }
         catch (IllegalArgumentException e) {
-            view.showError();
+            view.showError(e.getMessage());
         }
     }
 
@@ -39,11 +39,11 @@ public class MedicationController {
             boolean removed = tracker.removeMedication(medicationName);
 
             if (!removed) {
-                view.showError();
+                view.showError("Medication not found: " + medicationName);
             }
         }
         catch (IllegalArgumentException e) {
-            view.showError();
+            view.showError(e.getMessage());
         }
     }
 
@@ -52,33 +52,10 @@ public class MedicationController {
      */
     public void updateMedication(Medication m) {
         try {
-            if (m == null) {
-                throw new IllegalArgumentException("Medication cannot be null.");
-            }
-
-            boolean found = false;
-
-            for (Medication existing : tracker.getMedications()) {
-                if (existing.getName().equalsIgnoreCase(m.getName())) {
-
-                    existing.setDosage(m.getDosage());
-                    existing.setFrequency(m.getFrequency());
-                    existing.setQuantity(m.getQuantity());
-
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                view.showError();
-            }
-            else {
-                tracker.notifyObservers();
-            }
+            tracker.updateMedication(m);
         }
         catch (IllegalArgumentException e) {
-            view.showError();
+            view.showError(e.getMessage());
         }
     }
 
@@ -90,7 +67,7 @@ public class MedicationController {
             tracker.takeNextDose();
         }
         catch (IllegalStateException e) {
-            view.showError();
+            view.showError(e.getMessage());
         }
     }
 }

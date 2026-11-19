@@ -1,4 +1,3 @@
-import javax.swing.JOptionPane;
 public class PatientController {
 
     private Patient patient;
@@ -31,7 +30,7 @@ public class PatientController {
      * Checks the patient's login information.
      */
     public void login(String username, String password) {
-        if (patient.checkLogin(username, password)) {
+        if (patient != null && patient.checkLogin(username, password)) {
 
             DashboardView dashboard =
                 new DashboardView(patient, this);
@@ -62,5 +61,13 @@ public class PatientController {
      */
     public Patient getPatient() {
         return patient;
+    }
+
+    /**
+     * Returns to login while preserving the registered account and its data.
+     */
+    public void logout() {
+        loginView.showLogin();
+        loginView.setVisible(true);
     }
 }

@@ -68,6 +68,85 @@ public class MedicationTrackerTest extends TestCase {
     }
 
     /**
+     * Same-name medications must not make selection-based actions ambiguous.
+     */
+    public void testRejectDuplicateMedication() {
+        tracker.addMedication(medication1);
+        try {
+            tracker.addMedication(new Medication("vitamin d", 500, 2, 10));
+            fail("Expected IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e) {
+            assertEquals(1, tracker.getMedications().size());
+        }
+    }
+
+    /**
+     * Increasing frequency adds doses without changing the next medication.
+     */
+    public void testUpdateFrequencyPreservesQueueOrder() {
+        tracker.addMedication(medication1);
+        tracker.addMedication(medication2);
+        tracker.updateMedication(new Medication("Ibuprofen", 400, 3, 50));
+        for (int i = 0; i < 7; i++) {
+            assertSame(medication1, tracker.takeNextDose());
+        }
+        for (int i = 0; i < 21; i++) {
+            assertSame(medication2, tracker.takeNextDose());
+        }
+        assertEquals(400, medication2.getDosage());
+        assertEquals(29, medication2.getQuantity());
+        try {
+            tracker.takeNextDose();
+            fail("Expected empty weekly queue");
+        }
+        catch (IllegalStateException e) {
+            assertEquals("No doses remaining.", e.getMessage());
+        }
+    }
+
+    /**
+     * Lowering and raising frequency must not restore doses already taken.
+     */
+    public void testRepeatedFrequencyUpdatesPreserveTakenDoses() {
+        tracker.addMedication(medication2);
+        for (int i = 0; i < 10; i++) {
+            tracker.takeNextDose();
+        }
+        tracker.updateMedication(new Medication("Ibuprofen", 200, 1, 10));
+        tracker.updateMedication(new Medication("Ibuprofen", 200, 2, 10));
+        for (int i = 0; i < 4; i++) {
+            tracker.takeNextDose();
+        }
+        try {
+            tracker.takeNextDose();
+            fail("Expected empty weekly queue");
+        }
+        catch (IllegalStateException e) {
+            assertEquals(6, medication2.getQuantity());
+        }
+    }
+
+    /**
+     * Changing quantity must not replenish the weekly dose queue.
+     */
+    public void testUpdateQuantityPreservesRemainingDoses() {
+        tracker.addMedication(medication1);
+        tracker.takeNextDose();
+        tracker.updateMedication(new Medication("Vitamin D", 500, 1, 50));
+        for (int i = 0; i < 6; i++) {
+            tracker.takeNextDose();
+        }
+        try {
+            tracker.takeNextDose();
+            fail("Expected empty weekly queue");
+        }
+        catch (IllegalStateException e) {
+            assertEquals(44, medication1.getQuantity());
+        }
+    }
+
+    /**
      * Tests removing an existing medication.
      */
     public void testRemoveMedication() {
@@ -306,6 +385,22 @@ public class MedicationTrackerTest extends TestCase {
         catch (IllegalArgumentException e) {
             // Expected
         }
+    }
+
+    /**
+     * Tests that closing and reopening views does not retain old observers.
+     */
+    public void testRemoveObserver() {
+        TestObserver closed = new TestObserver();
+        TestObserver active = new TestObserver();
+        tracker.addObserver(closed);
+        tracker.removeObserver(closed);
+        tracker.addObserver(active);
+        tracker.addMedication(medication1);
+
+        assertFalse(closed.wasUpdated());
+        assertTrue(active.wasUpdated());
+        assertEquals(1, active.getLastUpdate().size());
     }
 
     /**

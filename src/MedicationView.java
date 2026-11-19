@@ -15,6 +15,7 @@ public class MedicationView extends JFrame implements Observer {
     private JList<String> medicationList;
 
     private JButton addButton;
+    private JButton updateButton;
     private JButton removeButton;
     private JButton takeDoseButton;
     private JButton backButton;
@@ -88,7 +89,7 @@ public class MedicationView extends JFrame implements Observer {
         add(scrollPane, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(
-            new GridLayout(2, 2, 10, 10)
+            new GridLayout(0, 2, 10, 10)
         );
 
         buttonPanel.setBorder(
@@ -96,11 +97,13 @@ public class MedicationView extends JFrame implements Observer {
         );
 
         addButton = new JButton("Add Medication");
+        updateButton = new JButton("Update Medication");
         removeButton = new JButton("Remove Medication");
         takeDoseButton = new JButton("Take Next Dose");
         backButton = new JButton("Back to Dashboard");
 
         buttonPanel.add(addButton);
+        buttonPanel.add(updateButton);
         buttonPanel.add(removeButton);
         buttonPanel.add(takeDoseButton);
         buttonPanel.add(backButton);
@@ -114,6 +117,8 @@ public class MedicationView extends JFrame implements Observer {
     private void setupActions() {
 
         addButton.addActionListener(e -> addMedication());
+
+        updateButton.addActionListener(e -> updateMedication());
 
         removeButton.addActionListener(e -> removeMedication());
 
@@ -133,11 +138,39 @@ public class MedicationView extends JFrame implements Observer {
      * Opens a form for adding a medication.
      */
     private void addMedication() {
+        showMedicationForm(null);
+    }
+
+    /**
+     * Opens a form to edit the selected medication.
+     */
+    private void updateMedication() {
+        int index = medicationList.getSelectedIndex();
+        List<Medication> medications = tracker.getMedications();
+        if (index < 0 || index >= medications.size()) {
+            showError("Please select a medication to update.");
+            return;
+        }
+        showMedicationForm(medications.get(index));
+    }
+
+    /**
+     * Adds a medication or edits the selected medication's details.
+     */
+    private void showMedicationForm(Medication selected) {
 
         JTextField nameField = new JTextField();
         JTextField dosageField = new JTextField();
         JTextField frequencyField = new JTextField();
         JTextField quantityField = new JTextField();
+
+        if (selected != null) {
+            nameField.setText(selected.getName());
+            nameField.setEditable(false);
+            dosageField.setText(String.valueOf(selected.getDosage()));
+            frequencyField.setText(String.valueOf(selected.getFrequency()));
+            quantityField.setText(String.valueOf(selected.getQuantity()));
+        }
 
         JPanel panel = new JPanel(
             new GridLayout(4, 2, 10, 10)
@@ -158,7 +191,7 @@ public class MedicationView extends JFrame implements Observer {
         int result = JOptionPane.showConfirmDialog(
             this,
             panel,
-            "Add Medication",
+            selected == null ? "Add Medication" : "Update Medication",
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE
         );
@@ -189,7 +222,12 @@ public class MedicationView extends JFrame implements Observer {
                 quantity
             );
 
-            controller.addMedication(medication);
+            if (selected == null) {
+                controller.addMedication(medication);
+            }
+            else {
+                controller.updateMedication(medication);
+            }
 
         }
         catch (NumberFormatException ex) {
@@ -232,7 +270,7 @@ public class MedicationView extends JFrame implements Observer {
             tracker.getMedications();
 
         if (index >= medications.size()) {
-            showError();
+            showError("Invalid medication selection. Please select it again.");
             return;
         }
 
@@ -277,6 +315,15 @@ public class MedicationView extends JFrame implements Observer {
     }
 
     /**
+     * Releases the model subscription when the window is disposed.
+     */
+    @Override
+    public void dispose() {
+        tracker.removeObserver(this);
+        super.dispose();
+    }
+
+    /**
      * Receives model updates and refreshes the list.
      */
     @Override
@@ -300,9 +347,16 @@ public class MedicationView extends JFrame implements Observer {
      * Displays a medication error.
      */
     public void showError() {
+        showError("Unable to complete the medication action.");
+    }
+
+    /**
+     * Displays the reason a medication action failed.
+     */
+    public void showError(String message) {
         JOptionPane.showMessageDialog(
             this,
-            "Unable to complete the medication action.",
+            message,
             "Medication Error",
             JOptionPane.ERROR_MESSAGE
         );

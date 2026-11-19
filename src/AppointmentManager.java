@@ -26,6 +26,11 @@ public class AppointmentManager {
         observers.add(o);
     }
 
+    // Removes an observer when its view is closed
+    public void removeObserver(Observer o) {
+        observers.remove(o);
+    }
+
     // Schedules a new appointment
     public void scheduleAppointment(Appointment a) {
         if (a == null) {
@@ -62,6 +67,11 @@ public class AppointmentManager {
         if (appointmentNum < 0 || appointmentNum >= appointments.size()) {
             throw new IllegalArgumentException(
                 "Appointment does not exist.");
+        }
+
+        if (date == null || time == null) {
+            throw new IllegalArgumentException(
+                "Date and time cannot be null.");
         }
 
         // Check whether the new date and time are in the future

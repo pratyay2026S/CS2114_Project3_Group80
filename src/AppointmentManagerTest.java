@@ -170,6 +170,42 @@ public void testSchedulePastAppointment() {
     }
 
     /**
+     * Tests rejecting a null reschedule date without changing the appointment.
+     */
+    public void testRescheduleNullDate() {
+        manager.scheduleAppointment(appointment1);
+        LocalDate originalDate = appointment1.getDate();
+        LocalTime originalTime = appointment1.getTime();
+        try {
+            manager.reschedule(0, null, LocalTime.NOON);
+            fail("Expected IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e) {
+            assertEquals("Date and time cannot be null.", e.getMessage());
+            assertEquals(originalDate, appointment1.getDate());
+            assertEquals(originalTime, appointment1.getTime());
+        }
+    }
+
+    /**
+     * Tests rejecting a null reschedule time without changing the appointment.
+     */
+    public void testRescheduleNullTime() {
+        manager.scheduleAppointment(appointment1);
+        LocalDate originalDate = appointment1.getDate();
+        LocalTime originalTime = appointment1.getTime();
+        try {
+            manager.reschedule(0, LocalDate.now().plusDays(10), null);
+            fail("Expected IllegalArgumentException");
+        }
+        catch (IllegalArgumentException e) {
+            assertEquals("Date and time cannot be null.", e.getMessage());
+            assertEquals(originalDate, appointment1.getDate());
+            assertEquals(originalTime, appointment1.getTime());
+        }
+    }
+
+    /**
      * Tests canceling an appointment.
      */
     public void testCancelAppointment() {
@@ -232,6 +268,21 @@ public void testSchedulePastAppointment() {
         catch (IllegalArgumentException e) {
             // Expected exception
         }
+    }
+
+    /**
+     * Tests that disposed views no longer receive notifications.
+     */
+    public void testRemoveObserver() {
+        TestObserver closed = new TestObserver();
+        TestObserver active = new TestObserver();
+        manager.addObserver(closed);
+        manager.removeObserver(closed);
+        manager.addObserver(active);
+        manager.scheduleAppointment(appointment1);
+
+        assertFalse(closed.wasUpdated());
+        assertTrue(active.wasUpdated());
     }
 
     /**
