@@ -43,7 +43,7 @@ public class Patient {
         return tracker;
     }
 
-    public AppointmentManager getAppointment() {
+    public AppointmentManager getAppointmentManager() {
         return appointment;
     }
 

@@ -1,4 +1,4 @@
-
+import javax.swing.JOptionPane;
 public class PatientController {
 
     private Patient patient;
@@ -31,13 +31,14 @@ public class PatientController {
      * Checks the patient's login information.
      */
     public void login(String username, String password) {
-        if (patient == null) {
-            loginView.showError();
-            return;
-        }
-
         if (patient.checkLogin(username, password)) {
-            System.out.println("Login successful!");
+
+            DashboardView dashboard =
+                new DashboardView(patient, this);
+
+            dashboard.setVisible(true);
+            loginView.dispose();
+
         }
         else {
             loginView.showError();
