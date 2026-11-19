@@ -3,22 +3,22 @@
 
 ## Overview
 
-This project is the Java back end for CareSync, a patient health-management app built by Group 80 for CS 2114 Project 3. It lets a patient track their medications and manage their doctor appointments, and it notifies listeners whenever either list changes.
+CareSync is a patient health-management app built by Group 80 for CS 2114 Project 3. It lets a patient track their medications and manage their doctor appointments, and it notifies listeners whenever either list changes.
 
-The code is split into model, view and controller classes. The views are simple console screens, and `Main` runs a short demo of the whole app. Each model class has a JUnit test class beside it.
+The code is split into model, view and controller classes. The views are a Java Swing GUI: a login and registration window, a dashboard, a medications window and an appointments window. `Main` opens the login window. Each model class has a JUnit test class beside it.
 
 ## Features
 
 **Patient accounts**
 
-- Create a patient with an ID, name and password. Invalid input throws an `IllegalArgumentException`.
-- Check login credentials with `checkLogin`.
+- Register a patient with an ID, username and password on the Create Account screen. Invalid input throws an `IllegalArgumentException` and the GUI shows an error dialog.
+- Log in with the username and password. `checkLogin` checks them.
 - Each patient owns one medication tracker and one appointment manager.
 
 **Medication tracking**
 
 - Add and remove medications (removal is by name, ignoring case).
-- Each medication stores a name, dosage, frequency and quantity.
+- Each medication stores a name, dosage, frequency and quantity. A blank name, a dosage or frequency of 0 or less, or a negative quantity throws an `IllegalArgumentException`.
 - Adding a medication queues one week of doses (frequency × 7) in a linked queue.
 - `takeNextDose` removes the next dose and lowers that medication's quantity by one.
 - `getLowSupply` lists medications with 5 or fewer doses left.
@@ -27,18 +27,24 @@ The code is split into model, view and controller classes. The views are simple 
 
 - Schedule, reschedule and cancel appointments with a doctor, date, time and location.
 - Appointments in the past are rejected, and so is booking the same date and time twice.
+- A blank doctor or location, or a null date or time, throws an `IllegalArgumentException`.
 
 **Change notifications (Observer pattern)**
 
 - Anything implementing `Observer` can register with the tracker or the manager.
 - It receives a list of text summaries each time a medication or appointment is added, removed, changed or taken.
 
-**Views and controllers**
+**GUI (views and controllers)**
 
-- Four console views: `LoginView`, `DashboardView`, `MedicationView` and `AppointmentView`.
+- Four Swing windows:
+  - `LoginView` has login and Create Account screens.
+  - `DashboardView` has Manage Medications, Manage Appointments and Logout buttons.
+  - `MedicationView` has Add Medication, Remove Medication, Take Next Dose and Back to Dashboard buttons.
+  - `AppointmentView` has Schedule Appointment, Reschedule Appointment, Cancel Appointment and Back to Dashboard buttons.
+- Forms open as dialogs. Errors and confirmations ("Remove …?", "Are you sure you want to cancel this appointment?") show as pop-ups.
 - Three controllers: `PatientController`, `MedicationController` and `AppointmentController`. They pass user actions to the model and send errors to the views.
-- Each controller registers its view as an `Observer`, so the screen reprints whenever the model changes.
-- `Main` runs the app end to end: create an account, log in, add a medicine, take a dose and schedule an appointment.
+- `MedicationController` and `AppointmentController` register their view as an `Observer`, so the list on screen refreshes whenever the model changes.
+- `Main` starts the GUI by opening the login window.
 
 ## Project structure
 
@@ -47,59 +53,67 @@ The code is split into model, view and controller classes. The views are simple 
 | File | Purpose |
 | --- | --- |
 | `Patient.java` | Account details, login check, and access to the tracker and manager |
-| `Medication.java` | One medication: name, dosage, frequency, quantity, low-supply check |
+| `Medication.java` | One medication: name, dosage, frequency, quantity, input checks, low-supply check |
 | `MedicationTracker.java` | Medication list, weekly dose queue, low-supply list, observer updates |
-| `Appointment.java` | One appointment: doctor, date, time, location |
+| `Appointment.java` | One appointment: doctor, date, time, location, input checks |
 | `AppointmentManager.java` | Schedule, reschedule, cancel, double-booking checks, observer updates |
 | `LinkedQueue.java` | Generic linked-list queue (enqueue, dequeue, peek, size) |
 | `Node.java` | Generic node used by the queue |
 | `Observer.java` | Interface with `update(List<String>)` for change notifications |
-| `LoginView.java` | Console screens for login, account creation and login errors |
-| `DashboardView.java` | Console dashboard that prints the list it is sent (an `Observer`) |
-| `MedicationView.java` | Prints the medication list when it changes (an `Observer`) and shows errors |
-| `AppointmentView.java` | Prints the appointment list when it changes (an `Observer`) and shows errors |
-| `PatientController.java` | Registers a patient, checks login, sets up a first medication |
+| `LoginView.java` | Swing window with the login and Create Account screens |
+| `DashboardView.java` | Swing dashboard that opens the medication and appointment windows and logs out |
+| `MedicationView.java` | Swing window listing medications (an `Observer`), with add, remove and take-dose forms |
+| `AppointmentView.java` | Swing window listing appointments (an `Observer`), with schedule, reschedule and cancel forms |
+| `PatientController.java` | Registers a patient, checks login and opens the dashboard, sets up a first medication |
 | `MedicationController.java` | Add, remove, update and take-dose actions; sends errors to the view |
 | `AppointmentController.java` | Schedule, reschedule and cancel actions; sends errors to the view |
-| `Main.java` | Demo that runs the app: login, add a medicine, take a dose, schedule an appointment |
+| `Main.java` | Starts the GUI by opening `LoginView` |
 | `Referenced Library/student.jar` | CS 2114 student library, needed by the tests |
 
 ## How to run
 
-**Model.** The model runs on its own, with no view. The six JUnit test classes are the driver. All 74 tests pass.
+**Model.** The model runs on its own, with no view. The six JUnit test classes are the driver. All 112 tests pass.
 
 | Test class | Tests | Result | Covers |
 | --- | --- | --- | --- |
-| `LinkedQueueTest` | 10 | Pass | Core queue methods: `enqueue`, `dequeue`, `peek`, `isEmpty`, plus null, empty-queue and refill cases |
-| `MedicationTest` | 9 | Pass | Getters, setters, `isRunningLow` |
-| `MedicationTrackerTest` | 14 | Pass | Add, remove, take dose, low supply, observers |
-| `AppointmentTest` | 9 | Pass | Getters, setters, past-date check |
-| `AppointmentManagerTest` | 15 | Pass | Schedule, reschedule, cancel, double-booking, observers |
-| `PatientTest` | 17 | Pass | Constructor checks, login, getters, setters |
+| `LinkedQueueTest` | 16 | Pass | `enqueue`, `dequeue`, `peek`, `isEmpty`, `getSize`, first-in first-out order, null, empty-queue, refill and interleaved cases, an `Integer` queue |
+| `MedicationTest` | 23 | Pass | Getters, setters, `isRunningLow` boundaries, bad input (blank or null name, zero or negative dosage and frequency, negative quantity) |
+| `MedicationTrackerTest` | 22 | Pass | Add, remove (including ignoring case and removal from the queue), take dose, zero quantity, low supply, observers |
+| `AppointmentTest` | 15 | Pass | Getters, setters, past-date check, bad input (blank or null doctor and location, null date or time) |
+| `AppointmentManagerTest` | 15 | Pass | Schedule, reschedule, cancel, double-booking, bad index, observers |
+| `PatientTest` | 21 | Pass | Constructor checks, login, getters, setters |
 
-**Thin view.** It uses simple console views. `Main` creates a patient, logs in, adds a medicine, takes a dose and schedules an appointment, all through the controllers, and prints what the views show. It runs without crashing. The model does not depend on any view.
+**GUI.** Run `Main.java` in Eclipse. The login window opens.
+
+1. Click **Register**, enter a patient ID (a positive number), a username and a password, and click **Create Account**.
+2. Log in with that username and password. The dashboard opens.
+3. Click **Manage Medications** to add, remove or take doses, or **Manage Appointments** to schedule, reschedule or cancel. Dates use `YYYY-MM-DD` and times use `HH:MM`.
+
+The model does not depend on any view.
 
 ## Reflection
 
-The spec planned seven model classes, four views and three controllers. We built the model and its tests first, as this checkpoint asks. We then added all four views, all three controllers and a `Main` class that runs the app.
+The spec planned seven model classes, four views and three controllers. We built the model and its tests first, as this checkpoint asks. We then built all four views as a Swing GUI, wrote all three controllers, and added a `Main` class that starts the app. We also added the input validation and bad-input tests that our last checkpoint listed as next steps.
 
 ### What changed from the spec
 
 | Area | Spec said | What we built | Why (what prompted it) |
 | --- | --- | --- | --- |
-| Views and controllers | `LoginView`, `DashboardView`, `MedicationView`, `AppointmentView`, plus three controllers | All four views and all three controllers, as console screens | Built after the model, as Deliverable 3 asks. The GUI was our biggest unknown, so the views print text to the console instead of opening windows. |
+| Views and controllers | `LoginView`, `DashboardView`, `MedicationView`, `AppointmentView`, plus three controllers | All four views as Swing windows, and all three controllers | Built after the model, as Deliverable 3 asks. The GUI was our biggest unknown, so we first used console views to test the wiring, then replaced them with a Swing GUI. |
 | `LinkedQueue.enqueue` | Described as adding to the front | Adds to the back; `dequeue` and `peek` use the front | The scope picked first-in, first-out for doses, and that only works if entries join at the back. The spec wording was a slip. |
 | Queue API | `enqueue`, `dequeue`, `peek`, `isEmpty` | The same four, plus `getSize()`. `enqueue(null)` throws `IllegalArgumentException`; `dequeue` and `peek` on an empty queue throw `IllegalStateException` | Writing the empty-queue and null tests showed the queue needed defined failures. |
 | `Node` class | Not in the class design, which only says the queue uses linked nodes | `Node<T>` with `getData`, `getNext`, `setNext` | A linked queue needs a node type. |
 | Weekly doses | `MedicationTracker` tracks daily and weekly medications | `addMedication` queues frequency × 7 doses | A queue of doses needs a fixed amount to hold, so we chose one week. |
-| Bad-input handling | `scheduleAppointment` prompts for a valid date and suggests the next open slot; empty bottle prompts a refill | Model throws `IllegalArgumentException` or `IllegalStateException` and nothing more | Our MVC rule is that no class spans two roles, so the model reports the error and the view will do the prompting. |
-| Validation location | Past-date check in `AppointmentManager` | Past-date check is in both `AppointmentManager` (`scheduleAppointment`, `reschedule`) and `Appointment.setDateTime` | Added while building `reschedule`. The copy in `setDateTime` is now redundant. |
-| Login | Checks username and password | `Patient.checkLogin` compares the patient's name and password; `null` returns false | Login was added to the MVP in our revised scope for security. |
-| Main class | Not in the spec | Main runs a short demo through the controllers | The deliverable needs the app to run from a driver, so we added one. |
+| Bad-input handling | `scheduleAppointment` prompts for a valid date and suggests the next open slot; empty bottle prompts a refill | Model throws `IllegalArgumentException` or `IllegalStateException`; the GUI shows the error in a pop-up | Our MVC rule is that no class spans two roles, so the model reports the error and the view shows it. The next-slot suggestion and refill prompt are not built yet. |
+| Validation location | Past-date check in `AppointmentManager` | Past-date check is in `AppointmentManager` (`scheduleAppointment`, `reschedule`), `Appointment.setDateTime`, and again in `AppointmentView` before it calls the controller. Blank-field and null checks are in `Medication` and `Appointment` | Added while building `reschedule` and then the GUI forms. The copies in `setDateTime` and `AppointmentView` are now redundant. |
+| Login | Checks username and password | `Patient.checkLogin` compares the patient's name (used as the username) and password; `null` returns false | Login was added to the MVP in our revised scope for security. |
+| Main class | Not in the spec | `Main` opens the login window | The app needs a starting point, so we added one. |
 
 ### Did the model stand alone?
 
-Yes. No model class refers to a view or controller class, and all 74 tests run without one. The views only receive text lines, so they never use a model class. The only connection is the `Observer` interface: the tracker and manager call `update(List<String>)` on whatever registered, so a view can implement it without the model knowing what it is.
+Yes. No model class refers to a view or controller class, and all 112 tests run without one. The only connection back from the model is the `Observer` interface: the tracker and manager call `update(List<String>)` on whatever registered, so a view can implement it without the model knowing what it is.
+
+The other direction is not as clean. The GUI views read model objects directly: `MedicationView` builds `Medication` objects and calls `tracker.getMedications()`, and `AppointmentView` builds `Appointment` objects and calls `getAppointments()`. That is allowed in MVC, but the views do more than just show what they are sent.
 
 Two things in the model still lean toward the view. `notifyObservers` in both managers builds display text such as "Doctor: ..., Date: ..." itself, and exception messages are worded for the user. Both should move to the view or controller.
 
@@ -109,36 +123,35 @@ Our scope listed three unknowns: connecting backend data to a GUI and sending no
 
 | Unknown | Status | Detail |
 | --- | --- | --- |
-| Getting backend changes to the front end | Figured out | The Observer pattern. `MedicationTracker` and `AppointmentManager` keep observer lists and call `update` after every change. Both are tested, and the demo in Main shows the views updating. |
+| Getting backend changes to the front end | Figured out | The Observer pattern. `MedicationTracker` and `AppointmentManager` keep observer lists and call `update` after every change. Both are tested, and the medication and appointment windows refresh their lists from it. |
 | Notifications when something is due | Still open | `getLowSupply()` finds medications with 5 or fewer left, but nothing pushes it to the user, and nothing triggers a reminder when a dose is due. |
-| Multi-page GUI | Still open | We built console views only, not a window-based GUI. |
+| Multi-page GUI | Figured out | A Swing GUI with a window for each MVP part: login and registration, dashboard, medications and appointments. The Back buttons return to the dashboard. |
+| GUI on a phone | Still open | Swing runs on desktop only. |
 
 ### What doesn't work yet
 
-This table checks every bad-input case from our scope against the code.
+This section checks every bad-input case from our scope against the code.
+
+**Handled**
 
 | Scope case | Result now | Where |
 | --- | --- | --- |
-| Wrong username or password | Handled: `checkLogin` returns false, and null input returns false | `Patient.checkLogin` |
-| Appointment in the past | Handled: `IllegalArgumentException` | `AppointmentManager.scheduleAppointment`, `reschedule`; `Appointment.setDateTime` |
-| Double-booking a slot | Handled: `IllegalArgumentException`. The next-open-slot suggestion is not built | `AppointmentManager.scheduleAppointment`, `reschedule` |
-| Dose from an empty queue or empty bottle | Handled: `IllegalStateException`. The refill prompt is view work | `MedicationTracker.takeNextDose` |
-| Cancel or reschedule an appointment that doesn't exist | Handled: `IllegalArgumentException` | `AppointmentManager.cancel`, `reschedule` |
-| Dose marked as taken twice | Not handled: there is no record of taken doses, so a second tap takes the next queued dose | `MedicationTracker.takeNextDose` |
-| Negative pill count or dosage | Not handled: `Medication` accepts any number | `Medication` constructor and setters |
-| Blank required fields | Partly handled: `Patient` rejects a blank name or password. Medication name, doctor and location are not checked, and a null date or time passed to `scheduleAppointment` throws `NullPointerException` | `Patient` constructor; `Medication`, `Appointment` |
+| Wrong username or password | `checkLogin` returns false, null input returns false, and the GUI shows an error pop-up | `Patient.checkLogin`, `PatientController.login` |
+| Appointment in the past | `IllegalArgumentException`, shown as a pop-up | `AppointmentManager.scheduleAppointment`, `reschedule`; `Appointment.setDateTime`; `AppointmentView` |
+| Double-booking a slot | `IllegalArgumentException`, shown as a pop-up | `AppointmentManager.scheduleAppointment`, `reschedule` |
+| Dose from an empty queue or empty bottle | `IllegalStateException`; the GUI shows an error pop-up | `MedicationTracker.takeNextDose`, `MedicationController.takeDose` |
+| Cancel or reschedule an appointment that doesn't exist | `IllegalArgumentException`. In the GUI you can only pick an existing appointment from the list | `AppointmentManager.cancel`, `reschedule`; `AppointmentView` |
+| Negative pill count or dosage | `IllegalArgumentException` for a dosage or frequency of 0 or less and for a negative quantity | `Medication` constructor and setters |
+| Blank required fields | `Patient` rejects a blank name or password, `Medication` a blank name, and `Appointment` a blank doctor or location or a null date or time | `Patient`, `Medication`, `Appointment` |
+
+**Not handled**
+
+| Scope case | Result now | Where |
+| --- | --- | --- |
+| Dose marked as taken twice | There is no record of taken doses, so a second click takes the next queued dose | `MedicationTracker.takeNextDose` |
+| Next open slot after a double-booking | The booking is rejected, but no other slot is suggested | `AppointmentManager.scheduleAppointment` |
+| Refill prompt for an empty bottle | The error pop-up shows, but there is no refill prompt | `MedicationView` |
 | Chatbot out-of-scope question | Not built: the chatbot is a stretch goal | None |
-
-Other gaps:
-
-- The views print text and take no input, so there is no window-based GUI.
-- `DashboardView` is not connected to the model in `Main`.
-- `Main` makes its own `AppointmentManager` instead of using the patient's.
-- `takeNextDose` only looks at the front dose. If that medication is out, every dose behind it is blocked.
-- The queue holds one week of doses. After that `takeNextDose` throws "No doses remaining" even when quantity is left, and nothing re-queues them.
-- `Medication.isRunningLow(int)` takes the quantity as a parameter instead of using the medication's own quantity.
-- `Medication`, `Appointment` and `Node` have no bad-input tests because they have no validation yet.
-- Passwords are stored as plain text.
 
 ## Next Steps
 
@@ -146,12 +159,13 @@ For Deliverable 4 we will finish the MVP first, then add a skip-and-requeue feat
 
 ### Finishing the MVP, in order
 
-1. Add validation to `Medication` (negative dosage, frequency or quantity; blank name) and `Appointment` (blank doctor or location; null date or time), with bad-input tests.
-2. Fix the dose queue: `takeNextDose` should not let one empty medication block the rest, and the queue should refill after its first week.
-3. Write JUnit tests for the three controllers and four views.
-4. Connect `DashboardView` to the model, and make `Main` use the patient's own `AppointmentManager`.
-5. Move display text out of the model: the strings built in `notifyObservers` and the user-facing exception wording.
-6. Suggest the next open slot when an appointment is double-booked.
+1. Fix login and logout so the account is kept and logging in before registering shows an error.
+2. Fix the dose queue so one empty medication doesn't block the rest, and refill it each week.
+3. Write JUnit tests for the controllers and views.
+4. Suggest the next open slot when an appointment is double-booked.
+5. Make the presentation and the demo, and practice both before presenting.
+
+Done since the last checkpoint: validation and bad-input tests for `Medication` and `Appointment`, and `Main` and the dashboard now use the patient's own `MedicationTracker` and `AppointmentManager`.
 
 ### Change feature: skip and requeue the next dose
 
@@ -161,17 +175,17 @@ A patient can skip the next dose. It moves to the back of the queue and the medi
 | --- | --- | --- |
 | `MedicationTracker` | Model | Changes: new `skipNextDose()` that calls `peek`, `dequeue` and `enqueue` on the queue and then `notifyObservers()`. Throws `IllegalStateException` on an empty queue. |
 | `MedicationController` | Controller | Changes: new `skipDose()` that calls `skipNextDose()`. |
-| `MedicationView` | View | Changes: a skip option wired to `skipDose()`. Its `update(List<String>)` stays the same. |
+| `MedicationView` | View | Changes: a Skip Next Dose button wired to `skipDose()`. Its `update(List<String>)` stays the same. |
 | `LinkedQueue`, `Node` | Model | Should not change: `enqueue`, `dequeue` and `peek` already cover it. |
 | `Medication`, `Patient`, `Observer` | Model | Should not change: `skipNextDose()` never calls `setQuantity`. |
 | `Appointment`, `AppointmentManager`, `AppointmentView`, `AppointmentController` | Model, view, controller | Should not change: appointments are separate from doses. |
-| `LoginView`, `DashboardView` | View | Should not change: they only receive updates through `Observer`. |
+| `LoginView`, `DashboardView` | View | Should not change: neither shows doses. |
 
 After Deliverable 4 we will compare this table with what we actually had to edit.
 
 ### Stretch goals
 
-- **Committing to:** pushing the low-supply notification to the user. `getLowSupply()` already exists, so the work is sending it through `Observer` to the view.
+- **Committing to:** pushing the low-supply notification to the user. `getLowSupply()` already exists, so the work is sending it through `Observer` to the GUI.
 - **Dropping:** the chatbot. None of us has built one, and our revised scope made it a last-resort goal.
 
 ### New tests needed
@@ -180,23 +194,25 @@ After Deliverable 4 we will compare this table with what we actually had to edit
 | --- | --- | --- |
 | `MedicationTracker.skipNextDose` | The skipped dose moves to the back and quantity is unchanged | Empty queue throws `IllegalStateException` |
 | `MedicationTracker.takeNextDose` | A dose is taken when the first medication is out but others are not | All medications out throws `IllegalStateException` |
-| `Medication` constructor and setters | Valid values are stored | Negative dosage, frequency or quantity, and a blank name, throw `IllegalArgumentException` |
-| `Appointment` constructor | Valid details are stored | Blank doctor or location, and null date or time, throw `IllegalArgumentException` |
-| `AppointmentManager.scheduleAppointment` | Next open slot is found after a double-booking | Null date or time throws `IllegalArgumentException`, not `NullPointerException` |
+| `AppointmentManager.scheduleAppointment` | Next open slot is found after a double-booking | None new: null date or time is already rejected by `Appointment` |
+| `AppointmentManager.reschedule` | Valid new date and time are stored | Null date or time throws `IllegalArgumentException`, not `NullPointerException` |
+| `PatientController.login` | Correct login opens the dashboard | Login before registering shows an error instead of crashing |
 | `MedicationController`, `AppointmentController` | Each call reaches the model and an observer is notified | A model error reaches the view without a crash |
 
 ### Who does what
 
 Owners below are the same as what each of us did on the spec.
 
-| Item | Owner |
-| --- | --- |
-| Validation and bad-input tests for `Medication` and `Appointment` | Abhinav |
-| Dose queue fixes and `skipNextDose()` with its tests | Pratyay |
-| JUnit tests for the controllers and views | Abigail |
-| Connect `DashboardView` to the model, and make `Main` use the patient's own `AppointmentManager` | Abhinav |
-| Next-open-slot suggestion and moving display text out of the model | Pratyay |
-| Low-supply notification through `Observer` | Abigail |
+| Item | Owner | Status |
+| --- | --- | --- |
+| Validation and bad-input tests for `Medication` and `Appointment` | Abhinav | Done |
+| Make `Main` and the dashboard use the patient's own `AppointmentManager` | Abhinav | Done |
+| Fix login and logout | Abhinav | To do |
+| Dose queue fixes and `skipNextDose()` with its tests | Pratyay | To do |
+| JUnit tests for the controllers and views | Abigail | To do |
+| Next-open-slot suggestion | Pratyay | To do |
+| Low-supply notification through `Observer` | Abigail | To do |
+| Make and practice the presentation and the demo | Abigail, Pratyay and Abhinav | To do |
 
 ## Attribution
 
@@ -229,4 +245,4 @@ Team: Abigail, Pratyay and Abhinav.
 
 ### GenAI note
 
-We used AI to help draft this README to summarize our key points. Additionally, it was used to go over all six test classes (74 tests, all passing), compared the code with the spec and the scope's bad-input cases. Used to create the view and controller classes.
+We used AI to help draft this README and summarize our key points. We also used it to go over all six test classes (112 tests, all passing) and to compare the code with the spec and the scope's bad-input cases. We used it to create the view and controller classes, including the Swing GUI.
