@@ -144,15 +144,6 @@ This section checks every bad-input case from our scope against the code.
 | Negative pill count or dosage | `IllegalArgumentException` for a dosage or frequency of 0 or less and for a negative quantity | `Medication` constructor and setters |
 | Blank required fields | `Patient` rejects a blank name or password, `Medication` a blank name, and `Appointment` a blank doctor or location or a null date or time | `Patient`, `Medication`, `Appointment` |
 
-**Not handled**
-
-| Scope case | Result now | Where |
-| --- | --- | --- |
-| Dose marked as taken twice | There is no record of taken doses, so a second click takes the next queued dose | `MedicationTracker.takeNextDose` |
-| Next open slot after a double-booking | The booking is rejected, but no other slot is suggested | `AppointmentManager.scheduleAppointment` |
-| Refill prompt for an empty bottle | The error pop-up shows, but there is no refill prompt | `MedicationView` |
-| Chatbot out-of-scope question | Not built: the chatbot is a stretch goal | None |
-
 ## Next Steps
 
 For Deliverable 4 we will finish the MVP first, then add a skip-and-requeue feature for doses.
@@ -160,10 +151,7 @@ For Deliverable 4 we will finish the MVP first, then add a skip-and-requeue feat
 ### Finishing the MVP, in order
 
 1. Fix login and logout so the account is kept and logging in before registering shows an error.
-2. Fix the dose queue so one empty medication doesn't block the rest, and refill it each week.
-3. Write JUnit tests for the controllers and views.
-4. Suggest the next open slot when an appointment is double-booked.
-5. Make the presentation and the demo, and practice both before presenting.
+2. Make the presentation and the demo, and practice both before presenting.
 
 Done since the last checkpoint: validation and bad-input tests for `Medication` and `Appointment`, and `Main` and the dashboard now use the patient's own `MedicationTracker` and `AppointmentManager`.
 
@@ -207,11 +195,7 @@ Owners below are the same as what each of us did on the spec.
 | --- | --- | --- |
 | Validation and bad-input tests for `Medication` and `Appointment` | Abhinav | Done |
 | Make `Main` and the dashboard use the patient's own `AppointmentManager` | Abhinav | Done |
-| Fix login and logout | Abhinav | To do |
-| Dose queue fixes and `skipNextDose()` with its tests | Pratyay | To do |
-| JUnit tests for the controllers and views | Abigail | To do |
-| Next-open-slot suggestion | Pratyay | To do |
-| Low-supply notification through `Observer` | Abigail | To do |
+| Fix login and logout | All | To do |
 | Make and practice the presentation and the demo | Abigail, Pratyay and Abhinav | To do |
 
 ## Attribution
