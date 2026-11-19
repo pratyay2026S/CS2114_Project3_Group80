@@ -153,6 +153,47 @@ For Deliverable 4 we will finish the MVP first, then add a skip-and-requeue feat
 1. Fix login and logout so the account is kept and logging in before registering shows an error.
 2. Make the presentation and the demo, and practice both before presenting.
 
+
+   CareSync demo outline (3:00)
+
+0:00–0:15 · Slide 1: Title (Abigail)
+
+CareSync, Group 80: Abigail, Pratyay and Abhinav.
+In one sentence: a Java app that lets a patient track medications and manage doctor appointments.
+
+0:15–0:40 · Slide 2: How it’s built (Pratyay)
+
+MVC: 8 model classes, 4 Swing views and 3 controllers.
+Patient owns a MedicationTracker and an AppointmentManager.
+Doses sit in our own LinkedQueue, first in, first out, with one week of doses queued.
+The Observer pattern lets the model update the GUI without knowing about it.
+
+0:40–1:05 · Slide 3: What changed from the spec (Pratyay)
+
+The console views became a full Swing GUI.
+enqueue adds to the back, not the front.
+We added validation to Medication and Appointment.
+Login checks the username and password.
+
+1:05–1:30 · Slide 4: Findings (Abigail)
+
+All 112 JUnit tests pass, and the model runs on its own.
+Handled: wrong login, past dates, double-booking, empty doses, negative numbers and blank fields.
+Not handled yet: a dose taken twice, suggesting the next open slot and the refill prompt.
+Unknowns: backend-to-GUI and the multi-page GUI are figured out. Notifications and phone support are still open.
+
+1:30–2:45 · Live demo (Abhinav drives, Pratyay narrates)
+
+1:30–1:45 Register: click Register and enter ID 1, username demo and password 1234.
+1:45–1:55 Log in: sign in as demo and the dashboard opens.
+1:55–2:15 Medications: add Ibuprofen (dosage 200, 2 per day, quantity 10), then click Take Next Dose. Point out that the quantity drops to 9 on screen right away, which is the Observer at work.
+2:15–2:25 Error case: try to schedule an appointment in the past, and the error pop-up appears.
+2:25–2:45 Appointments: schedule a future appointment, reschedule it, then go back to the dashboard.
+
+2:45–3:00 · Slide 5: gear for questions (Abhinav)
+
+
+
 Done since the last checkpoint: validation and bad-input tests for `Medication` and `Appointment`, and `Main` and the dashboard now use the patient's own `MedicationTracker` and `AppointmentManager`.
 
 ### Change feature: skip and requeue the next dose
